@@ -16,8 +16,14 @@ class Trie:
         if len(newWord) == 0:
             return None
         
-        startingChildren[newWord[0]] = startingChildren[newWord[0]].addChild(newWord[1:], newWord)
-        return startingChildren[newWord[0]]
+        pCrawl = self.startingChildren[newWord[0]]
+        length = len(newWord)
+        for level in range(1, length):
+            if newWord[level] not in pCrawl.children:
+                pCrawl.children[newWord[level]] = Node(pCrawl, newWord[level]) 
+            pCrawl = pCrawl[newWord[level]]
+
+        pCrawl.setFullName(newWord)
 
     def matchWord(keyWord):
         index = 0
