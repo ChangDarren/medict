@@ -1,4 +1,5 @@
 import string
+import collections
 
 from node import Node
 
@@ -41,14 +42,41 @@ class Trie:
         return True
 
     def __breadthFirstSearch(self, node):
-        queue = [node]
-        while len(stack) != 0:
-            currNode = queue.
+        hasVisited = [node]
+        queue =  collections.deque()
+        queue.append(node)
+        while len(queue) != 0:
+            currNode = queue.popLeft()
+            hasVisited.append(currNode)
+            for child in list(currNode.children.values()):
+                if child not in hasVisited:
+                    queue.append(child)
+
+        return hasVisited
+
+    def getCloseWords(self, keyWord):
+        """
+            Returns the list of nodes that are possible.
+            Assumes that the key word is not in trie
+        """
+
+        pathWord = self.__getPathWord(keyWord)
+        possibleNodes = []
+
+        pCrawl = self.startingChildren[pathWord[0]]
+        length = len(pathWord)
+        for level in range(1, length):
+            if pathWord[level] not in pCrawl.children:
+                possibleNodes = self.__breadthFirstSearch(pCrawl)
+                break
+            pCrawl = pCrawl.children[pathWord[level]]
+        
+        return [node for node in possibleNodes if node.hasFullName()]
 
 
     def matchWord(self, keyWord):
         """
-            Returns the full drug name if the keyword matches else
+            Returns the node if the keyword matches else
             returns None
         """
         
@@ -64,7 +92,7 @@ class Trie:
         if pCrawl is None or not pCrawl.hasFullName():
             return None
 
-        return pCrawl.getFullName()
+        return pCrawl
 
     def __getPathWord(self, newWord):
         """
@@ -78,7 +106,7 @@ class Trie:
             numbers which will help when narrowing down the possible words later.
         """
         pathWord = newWord.lower()
-        pathWord = ''.join(ch for ch in pathWord if (ch.isalnum() or ch == ' '))
+        pathWord = ''.join(ch for ch in pathWord if (ch.isalnum() or ch == ' ' or ch == '/'))
         splittedWords = pathWord.split(' ')
         splittedWords.sort(key=str.lower, reverse=True)
         newPathWord = ''.join(splittedWords)
