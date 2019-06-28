@@ -14,7 +14,15 @@ class Trie:
             rootNode = Node(None, num)
             self.startingChildren[num] = rootNode
 
-    def insertWord(self, newWord):
+    def parseConcepts(self, concepts):
+        """
+            Reads in the concepts and forms the trie.
+            concepts is a dictionary mapping concept_id:concept_name
+        """
+        for concept_id, concept_name in concepts.item():
+            self.insertWord(concept_id, concept_name)
+
+    def insertWord(self, newID, newWord):
         """
             Inserts the new word into the trie. The path will be the
             sorted word order while the full name inserted is the given word.
@@ -38,6 +46,7 @@ class Trie:
                 pCrawl.children[pathWord[level]] = Node(pCrawl, pathWord[level]) 
             pCrawl = pCrawl.children[pathWord[level]]
 
+        pCrawl.setID(newID)
         pCrawl.setFullName(newWord)
         return True
 
