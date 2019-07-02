@@ -1,5 +1,4 @@
 class Node:
-
     def __init__(self, parent, letter, drugId=None, fullName=None):
         self.parent = parent
         self.letter = letter

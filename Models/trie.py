@@ -1,7 +1,7 @@
 import string
 import collections
 
-from node import Node
+from Models.node import Node
 
 class Trie:
     def __init__(self):
@@ -19,8 +19,10 @@ class Trie:
             Reads in the concepts and forms the trie.
             concepts is a dictionary mapping concept_id:concept_name
         """
-        for concept_id, concept_name in concepts.item():
+        print('Parsing concepts into trie...')
+        for concept_id, concept_name in concepts.items():
             self.insertWord(concept_id, concept_name)
+        print('Finished parsing concepts into trie.')
 
     def insertWord(self, newID, newWord):
         """
@@ -36,7 +38,7 @@ class Trie:
         # Generate the path
         pathWord = self.__getPathWord(newWord)
 
-        if len(newWord) == 0 or self.matchWord(pathWord):
+        if len(pathWord) == 0 or self.matchWord(pathWord):
             return False 
 
         pCrawl = self.startingChildren[pathWord[0]]
@@ -50,20 +52,25 @@ class Trie:
         pCrawl.setFullName(newWord)
         return True
 
-    def __breadthFirstSearch(self, node):
+    def __breadthFirstSearch(self, node, capacity):
         hasVisited = [node]
         queue =  collections.deque()
         queue.append(node)
+        count = 1
         while len(queue) != 0:
-            currNode = queue.popLeft()
+            currNode = queue.popleft()
             hasVisited.append(currNode)
             for child in list(currNode.children.values()):
                 if child not in hasVisited:
                     queue.append(child)
+                    if child.hasFullName():
+                        count += 1
+                        if count >= capacity:
+                            return hasVisited
 
         return hasVisited
 
-    def getCloseWords(self, keyWord):
+    def getCloseWords(self, keyWord, capacity):
         """
             Returns the list of nodes that are possible.
             Assumes that the key word is not in trie
@@ -76,7 +83,7 @@ class Trie:
         length = len(pathWord)
         for level in range(1, length):
             if pathWord[level] not in pCrawl.children:
-                possibleNodes = self.__breadthFirstSearch(pCrawl)
+                possibleNodes = self.__breadthFirstSearch(pCrawl, capacity)
                 break
             pCrawl = pCrawl.children[pathWord[level]]
         
@@ -114,10 +121,29 @@ class Trie:
             generating the path is to allow for the alphabets to come before the 
             numbers which will help when narrowing down the possible words later.
         """
+        unwantedWords = ['capsule', 'capsules', 'tablet', 'tablets', 'injection']
+
         pathWord = newWord.lower()
-        pathWord = ''.join(ch for ch in pathWord if (ch.isalnum() or ch == ' ' or ch == '/'))
+        pathWord = ''.join(ch for ch in pathWord if (ch.isalnum() or ch == ' ' or ch == '/' or ch == '%'))
         splittedWords = pathWord.split(' ')
-        splittedWords.sort(key=str.lower, reverse=True)
-        newPathWord = ''.join(splittedWords)
+        splittedWords = [word for word in splittedWords if word not in unwantedWords]
+        
+        wordList = [] 
+        numberList = []
+        
+        for word in splittedWords:
+            if not word:
+                continue
+            
+            # Separate the words from the rest
+            if word[0].isdigit() or word[0] == '/' or word[0] == '%':
+                numberList.append(word)
+            else:
+                wordList.append(word)
+        
+        # Only sort the words as we want to preserve the numbering order
+        wordList.sort(key=str.lower)
+
+        newPathWord = ''.join(wordList) + ''.join(numberList)
         return newPathWord
 

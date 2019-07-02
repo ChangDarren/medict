@@ -1,6 +1,10 @@
 import sys
 
-def getEditDistance(firstWord, secondWord):
+def getEditDistance(word, node):
+    secondWord = node.getFullName()
+    return __getEditDistance(word, secondWord)
+
+def __getEditDistance(firstWord, secondWord):
     firstLength = len(firstWord)
     secondLength = len(secondWord)
 
@@ -45,20 +49,20 @@ def __printDp(dp):
         print('')
 
 # TODO: Decide what to do if there are words with the same distance
-def getClosestWord(keyWord, bagOfWords):
+def getClosestNode(keyWord, bagOfNodes):
     # The max distance that we will tolerate
-    THRESHOLD = -9999
+    THRESHOLD = -5
 
-    if len(bagOfWords) == 0:
+    if len(bagOfNodes) == 0:
         return None
     
     best = THRESHOLD 
-    bestWord = None
-    for word in bagOfWords:
-        dist = getEditDistance(keyWord, word)
+    bestNode = None
+    for node in bagOfNodes:
+        dist = getEditDistance(keyWord, node)
         if dist > best:
             best = dist
-            bestWord = word
+            bestNode = node
             
-    return bestWord
+    return bestNode
 
