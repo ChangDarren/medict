@@ -38,7 +38,7 @@ class Trie:
         # Generate the path
         pathWord = self.__getPathWord(newWord)
 
-        if len(pathWord) == 0 or self.matchWord(pathWord):
+        if not pathWord or self.matchWord(newWord):
             return False 
 
         pCrawl = self.startingChildren[pathWord[0]]
@@ -79,6 +79,9 @@ class Trie:
         pathWord = self.__getPathWord(keyWord)
         possibleNodes = []
 
+        if not pathWord:
+            return possibleNodes
+
         pCrawl = self.startingChildren[pathWord[0]]
         length = len(pathWord)
         for level in range(1, length):
@@ -97,6 +100,9 @@ class Trie:
         """
         
         pathWord = self.__getPathWord(keyWord)
+
+        if not pathWord:
+            return None
 
         pCrawl = self.startingChildren[pathWord[0]]
         length = len(pathWord)
@@ -117,14 +123,15 @@ class Trie:
             Path word should all be in lower case and should only alphanumeric
             characters.
 
-            The decision to sort the words in reverse lexicographical order before
-            generating the path is to allow for the alphabets to come before the 
-            numbers which will help when narrowing down the possible words later.
+            The decision to sort the words in lexicographical order before
+            generating the path is to allow for different ordering of the words.
+            The path is then a concat of the words and the concentration.
         """
-        unwantedWords = ['capsule', 'capsules', 'tablet', 'tablets', 'injection']
+        unwantedWords = ['solution', 'for', 'vial', 'vials', 'capsule', 'capsules', 'tablet',\
+                'tablets', 'powder', 'extract', 'unit', 'and', 'solvent', 'solution', '/', '']
 
         pathWord = newWord.lower()
-        pathWord = ''.join(ch for ch in pathWord if (ch.isalnum() or ch == ' ' or ch == '/' or ch == '%'))
+        pathWord = ''.join(ch for ch in pathWord if (ch.isalnum() or ch == ' ' or ch == '/' or ch=='%'))
         splittedWords = pathWord.split(' ')
         splittedWords = [word for word in splittedWords if word not in unwantedWords]
         
@@ -136,14 +143,14 @@ class Trie:
                 continue
             
             # Separate the words from the rest
-            if word[0].isdigit() or word[0] == '/' or word[0] == '%':
-                numberList.append(word)
-            else:
+            if word.isalpha():
                 wordList.append(word)
+            elif not word[0] == '/':
+                numberList.append(word)
         
         # Only sort the words as we want to preserve the numbering order
         wordList.sort(key=str.lower)
 
-        newPathWord = ''.join(wordList) + ''.join(numberList)
+        newPathWord = ''.join(wordList)  + ''.join(numberList)
         return newPathWord
 

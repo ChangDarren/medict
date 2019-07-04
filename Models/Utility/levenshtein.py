@@ -2,7 +2,19 @@ import sys
 
 def getEditDistance(word, node):
     secondWord = node.getFullName()
+    secondWord = __preprocess(secondWord)
+    
     return __getEditDistance(word, secondWord)
+
+def __preprocess(fullName):
+    # Preprocess the concept to reduce unnecessary mess
+    unwantedWords = ['solution', 'for', 'vial', 'vials', 'capsule', 'capsules', 'tablet',\
+        'tablets', 'powder', 'extract', 'unit', 'and', 'solvent', 'solution', '/', '']
+    splittedWords = fullName.split(' ')
+    splittedWords = [word for word in splittedWords if word not in unwantedWords]
+    newName = ' '.join(splittedWords)
+
+    return newName
 
 def __getEditDistance(firstWord, secondWord):
     firstLength = len(firstWord)
@@ -14,7 +26,7 @@ def __getEditDistance(firstWord, secondWord):
     if secondLength == 0:
         return firstLength
 
-    matchCost = 2
+    matchCost = 2 
     mismatchCost = -1
 
     dp = [[0 for x in range(firstLength + 1)] for y in range(secondLength + 1)]
@@ -51,7 +63,7 @@ def __printDp(dp):
 # TODO: Decide what to do if there are words with the same distance
 def getClosestNode(keyWord, bagOfNodes):
     # The max distance that we will tolerate
-    THRESHOLD = -5
+    THRESHOLD = len(keyWord)
 
     if len(bagOfNodes) == 0:
         return None
@@ -63,6 +75,5 @@ def getClosestNode(keyWord, bagOfNodes):
         if dist > best:
             best = dist
             bestNode = node
-            
-    return bestNode
 
+    return bestNode

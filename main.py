@@ -3,6 +3,7 @@ import importlib
 
 from Models.trie import Trie
 from Models.Utility.levenshtein import getClosestNode
+from Models.Utility.util import removeInsideBrackets, getInsideBrackets
 from Parser.conceptParser import getDrugConcepts
 from Parser.inputParser import readTextInput
 
@@ -13,7 +14,7 @@ def main():
     
     inputFilePath = sys.argv[1]
     outputFilePath = sys.argv[2]
-    capacity = 150 
+    capacity = 350 
 
     trie = Trie()
     concepts = getDrugConcepts()
@@ -27,11 +28,27 @@ def main():
                 possibleNodes = trie.getCloseWords(word, capacity)
                 answerNode = getClosestNode(word, possibleNodes)
             
+            # Account for the additional information in the parenthesis
+            if not answerNode and '(' in word and ')' in word:
+                alteredWord = removeInsideBrackets(word)
+                answerNode = trie.matchWord(alteredWord)
+                if not answerNode:
+                    possibleNodes = trie.getCloseWords(alteredWord, capacity)
+                    answerNode = getClosestNode(alteredWord, possibleNodes)
+
+            # Account for the case where we will only take the drug name in '['
+            if not answerNode and '[' in word and ']' in word:
+                alteredWord = getInsideBrackets(word)
+                answerNode = trie.matchWord(alteredWord)
+                if not answerNode:
+                    possibleNodes = trie.getCloseWords(alteredWord, capacity)
+                    answerNode = getClosestNode(alteredWord, possibleNodes)
+            
             if answerNode:
-                outFile.write(answerNode.getFullName() + ', ' + answerNode.getID() + '\n')
+                outFile.write(word + ', \"' + answerNode.getFullName() + '\", ' + answerNode.getID() + '\n')
                 outFile.flush()
             else:
-                outFile.write('0\n')
+                outFile.write(word + ',0,\n')
                 outFile.flush()
 
 if __name__ == '__main__':
